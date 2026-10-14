@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Subtle warm surface gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FAF8F5" />
+      <stop offset="100%" stop-color="#EFECE6" />
+    </linearGradient>
+
+    <!-- Calm Sage Green gradient for the return arc -->
+    <linearGradient id="sageGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4A7A66" />
+      <stop offset="100%" stop-color="#325546" />
+    </linearGradient>
+
+    <!-- Soft drop shadow for depth -->
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#262522" flood-opacity="0.08" />
+    </filter>
+  </defs>
+
+  <!-- App Icon Squircle Background -->
+  <rect width="512" height="512" rx="115" fill="url(#bgGrad)" />
+
+  <!-- Outer Subtle Awareness Halo -->
+  <circle cx="256" cy="256" r="170" fill="none" stroke="#E5E0D8" stroke-width="16" />
+
+  <!-- Primary "Back On Track" Gentle U-Turn / Return Arc -->
+  <path
+    d="M 136 136
+       A 170 170 0 1 1 102 328
+       C 122 372, 185 340, 224 288"
+    fill="none"
+    stroke="url(#sageGrad)"
+    stroke-width="36"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    filter="url(#softShadow)" />
+
+  <!-- Gentle Arrowhead pointing back to Center Intention -->
+  <path
+    d="M 178 282 L 230 282 L 230 334"
+    fill="none"
+    stroke="#3F6A58"
+    stroke-width="32"
+    stroke-linecap="round"
+    stroke-linejoin="round" />
+
+  <!-- Center Intention Anchor Dot (Warm Amber) + Soft Glow -->
+  <circle cx="256" cy="256" r="56" fill="#C87D4B" fill-opacity="0.16" />
+  <circle cx="256" cy="256" r="30" fill="#C87D4B" filter="url(#softShadow)" />
+</svg>

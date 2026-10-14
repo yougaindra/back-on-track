@@ -4,6 +4,14 @@ A mindful native Android companion app built with modern Jetpack Compose that ke
 
 ---
 
+## 📸 Preview
+
+| Onboarding | Today Screen | Settings |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/onboarding.png" width="250"> | <img src="docs/screenshots/today.png" width="250"> | <img src="docs/screenshots/settings.png" width="250"> |
+
+---
+
 ## ✨ Features
 
 - **Intention Anchoring**: Define your primary intention, secondary tasks, and next small step for each day.

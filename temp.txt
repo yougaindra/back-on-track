@@ -1,0 +1,106 @@
+Create the following 6 SVG/XML icon files at their exact `=== FILE: <path> ===` paths. Do NOT overwrite or regenerate any existing files in the repository.
+
+After creating those 6 files, make ONLY these two surgical edits:
+1. In `app/src/main/AndroidManifest.xml`, add `android:icon="@mipmap/ic_launcher"` and `android:roundIcon="@mipmap/ic_launcher_round"` to the `<application>` tag.
+2. In `app/src/main/java/com/yougaindra/backontrack/core/AlarmAndNotificationCoordinator.kt`, add `import com.yougaindra.backontrack.R` and update `.setSmallIcon(...)` to `.setSmallIcon(R.drawable.ic_stat_checkin)`.
+
+=== FILE: logo.svg ===
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FAF8F5" />
+      <stop offset="100%" stop-color="#EFECE6" />
+    </linearGradient>
+    <linearGradient id="sageGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4A7A66" />
+      <stop offset="100%" stop-color="#325546" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="115" fill="url(#bgGrad)" />
+  <circle cx="256" cy="256" r="170" fill="none" stroke="#E5E0D8" stroke-width="16" />
+  <path d="M 136 136 A 170 170 0 1 1 102 328 C 122 372, 185 340, 224 288" fill="none" stroke="url(#sageGrad)" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M 178 282 L 230 282 L 230 334" fill="none" stroke="#3F6A58" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="256" cy="256" r="56" fill="#C87D4B" fill-opacity="0.16" />
+  <circle cx="256" cy="256" r="30" fill="#C87D4B" />
+</svg>
+
+=== FILE: app/src/main/res/drawable/ic_launcher_background.xml ===
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FAF8F5"
+        android:pathData="M0,0h108v108h-108z" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M54,54m-28,0a28,28 0,1 1,56 0a28,28 0,1 1,-56 0"
+        android:strokeWidth="3"
+        android:strokeColor="#E5E0D8" />
+</vector>
+
+=== FILE: app/src/main/res/drawable/ic_launcher_foreground.xml ===
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M34,34 A28,28 0 1,1 28,66 C32,73 42,68 48,60"
+        android:strokeWidth="6.5"
+        android:strokeColor="#3F6A58"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M40,59 L49,59 L49,68"
+        android:strokeWidth="5.5"
+        android:strokeColor="#3F6A58"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:fillColor="#29C87D4B"
+        android:pathData="M54,54m-10,0a10,10 0,1 1,20 0a10,10 0,1 1,-20 0" />
+    <path
+        android:fillColor="#C87D4B"
+        android:pathData="M54,54m-5.5,0a5.5,5.5 0,1 1,11 0a5.5,5.5 0,1 1,-11 0" />
+</vector>
+
+=== FILE: app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml ===
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/ic_launcher_background" />
+    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+    <monochrome android:drawable="@drawable/ic_launcher_foreground" />
+</adaptive-icon>
+
+=== FILE: app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml ===
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/ic_launcher_background" />
+    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+    <monochrome android:drawable="@drawable/ic_launcher_foreground" />
+</adaptive-icon>
+
+=== FILE: app/src/main/res/drawable/ic_stat_checkin.xml ===
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:tint="#FFFFFF"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M6.34,6.34 A8,8 0 1,1 4.6,15.4 C5.8,17.4 8.5,16 10.2,13.6"
+        android:strokeWidth="2.2"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,12m-2.5,0a2.5,2.5 0,1 1,5 0a2.5,2.5 0,1 1,-5 0" />
+</vector>
