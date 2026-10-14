@@ -37,21 +37,26 @@ back-on-track/
 │   └── src/
 │       ├── main/
 │       │   ├── AndroidManifest.xml
-│       │   └── java/com/yougaindra/backontrack/
-│       │       ├── MainActivity.kt                      # Jetpack Compose UI & screens
-│       │       ├── core/
-│       │       │   ├── AlarmAndNotificationCoordinator.kt # Exact alarms & notification channels
-│       │       │   ├── LocalStore.kt                     # SharedPreferences JSON persistence
-│       │       │   └── SchedulerEngine.kt                # Time calculation, hours & rollover logic
-│       │       ├── model/
-│       │       │   └── DomainModels.kt                   # Domain entities, enums & states
-│       │       └── receiver/
-│       │           ├── BootAndTimeReceiver.kt            # Re-registers alarms on boot/clock changes
-│       │           ├── CheckInAlarmReceiver.kt           # Triggers check-in prompts on alarm fire
-│       │           └── NotificationActionReceiver.kt     # Handles user button clicks in notifications
+│       │   ├── java/com/yougaindra/backontrack/
+│       │   │   ├── MainActivity.kt                      # Jetpack Compose UI & screens
+│       │   │   ├── core/
+│       │   │   │   ├── AlarmAndNotificationCoordinator.kt # Exact alarms & notification channels
+│       │   │   │   ├── LocalStore.kt                     # SharedPreferences JSON persistence
+│       │   │   │   └── SchedulerEngine.kt                # Time calculation, hours & rollover logic
+│       │   │   ├── model/
+│       │   │   │   └── DomainModels.kt                   # Domain entities, enums & states
+│       │   │   └── receiver/
+│       │   │       ├── BootAndTimeReceiver.kt            # Re-registers alarms on boot/clock changes
+│       │   │       ├── CheckInAlarmReceiver.kt           # Triggers check-in prompts on alarm fire
+│       │   │       └── NotificationActionReceiver.kt     # Handles user button clicks in notifications
+│       │   └── res/
+│       │       ├── drawable/                             # Vector drawables & notification icons
+│       │       └── mipmap-anydpi-v26/                    # Adaptive app launcher icons
 │       └── test/
 │           └── java/com/yougaindra/backontrack/core/
 │               └── SchedulerEngineTest.kt                # Unit tests for interval & rollover calculations
+├── docs/
+│   └── screenshots/              # App UI preview screenshots
 ├── gradle/
 │   └── wrapper/
 │       ├── gradle-wrapper.jar
@@ -60,6 +65,7 @@ back-on-track/
 ├── gradle.properties             # JVM args and AndroidX flags
 ├── gradlew                       # Linux / macOS Gradle wrapper
 ├── gradlew.bat                   # Windows Gradle wrapper
+├── logo.svg                      # Brand vector logo
 ├── settings.gradle.kts           # Plugin & repository settings
 └── README.md
 ```

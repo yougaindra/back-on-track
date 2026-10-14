@@ -11,6 +11,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.yougaindra.backontrack.MainActivity
+import com.yougaindra.backontrack.R
 import com.yougaindra.backontrack.model.CheckInResponseType
 import com.yougaindra.backontrack.model.DailyIntention
 import com.yougaindra.backontrack.model.UserSettings
@@ -154,7 +155,7 @@ class AlarmAndNotificationCoordinator(private val context: Context) {
         }
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_popup_reminder)
+            .setSmallIcon(R.drawable.ic_stat_checkin)
             .setContentTitle("Time for a quick check-in")
             .setContentText(bodyText)
             .setStyle(NotificationCompat.BigTextStyle().bigText(bodyText))
