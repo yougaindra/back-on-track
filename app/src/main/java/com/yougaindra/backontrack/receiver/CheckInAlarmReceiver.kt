@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.yougaindra.backontrack.core.AlarmAndNotificationCoordinator
+import com.yougaindra.backontrack.core.CheckInCuePlayer
 import com.yougaindra.backontrack.core.LocalStore
 import com.yougaindra.backontrack.core.SchedulerEngine
 import com.yougaindra.backontrack.model.CheckInRecord
@@ -36,6 +37,7 @@ class CheckInAlarmReceiver : BroadcastReceiver() {
 
         if (SchedulerEngine.isWithinActiveWindow(now, settings)) {
             if (settings.reminderStyle == ReminderStyle.SOUND_ONLY) {
+                CheckInCuePlayer.playCheckInCue(context, settings, intention)
                 store.appendHistory(
                     CheckInRecord(
                         id = UUID.randomUUID().toString(),

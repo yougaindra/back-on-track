@@ -40,6 +40,8 @@ class LocalStore(context: Context) {
                 pauseOutsideHours = obj.optBoolean("pauseOutsideHours", true),
                 soundEnabled = obj.optBoolean("soundEnabled", true),
                 vibrationEnabled = obj.optBoolean("vibrationEnabled", true),
+                speakTimeEnabled = obj.optBoolean("speakTimeEnabled", true),
+                speakIntentionEnabled = obj.optBoolean("speakIntentionEnabled", false),
                 showIntentionInPrompt = obj.optBoolean("showIntentionInPrompt", true),
                 darkTheme = obj.optBoolean("darkTheme", false)
             )
@@ -59,6 +61,8 @@ class LocalStore(context: Context) {
             put("pauseOutsideHours", settings.pauseOutsideHours)
             put("soundEnabled", settings.soundEnabled)
             put("vibrationEnabled", settings.vibrationEnabled)
+            put("speakTimeEnabled", settings.speakTimeEnabled)
+            put("speakIntentionEnabled", settings.speakIntentionEnabled)
             put("showIntentionInPrompt", settings.showIntentionInPrompt)
             put("darkTheme", settings.darkTheme)
         }

@@ -48,7 +48,8 @@ class AlarmAndNotificationCoordinator(private val context: Context) {
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
                 description = "Supportive, non-judgmental check-in reminders during active hours."
-                enableVibration(true)
+                enableVibration(false)
+                setSound(null, null)
             }
             notificationManager.createNotificationChannel(channel)
         }
@@ -154,6 +155,8 @@ class AlarmAndNotificationCoordinator(private val context: Context) {
             "Are you doing what you intended to do?"
         }
 
+        val autoDismissMillis = (settings.intervalMinutes * 60 * 1000L).coerceIn(5 * 60 * 1000L, 60 * 60 * 1000L)
+
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_checkin)
             .setContentTitle("Time for a quick check-in")
@@ -162,16 +165,15 @@ class AlarmAndNotificationCoordinator(private val context: Context) {
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
             .setOnlyAlertOnce(true)
+            .setTimeoutAfter(autoDismissMillis)
             .setContentIntent(contentPendingIntent)
             .addAction(0, "On Track", onTrackPending)
             .addAction(0, "Got Distracted", resetPending)
             .addAction(0, "Snooze 15m", snoozePending)
-
-        if (!settings.soundEnabled) {
-            builder.setSilent(true)
-        }
+            .setSilent(true)
 
         notificationManager.notify(NOTIFICATION_ID, builder.build())
+        CheckInCuePlayer.playCheckInCue(context, settings, intention)
     }
 
     fun dismissNotification() {

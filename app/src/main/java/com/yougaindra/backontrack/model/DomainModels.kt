@@ -31,6 +31,8 @@ data class UserSettings(
     val pauseOutsideHours: Boolean = true,
     val soundEnabled: Boolean = true,
     val vibrationEnabled: Boolean = true,
+    val speakTimeEnabled: Boolean = true,
+    val speakIntentionEnabled: Boolean = false,
     val showIntentionInPrompt: Boolean = true,
     val darkTheme: Boolean = false
 )

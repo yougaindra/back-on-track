@@ -721,6 +721,10 @@ fun SettingsScreen(
     var interval by remember(settings.intervalMinutes) { mutableStateOf(settings.intervalMinutes.toString()) }
     var activeStart by remember(settings.activeStart) { mutableStateOf(settings.activeStart) }
     var activeEnd by remember(settings.activeEnd) { mutableStateOf(settings.activeEnd) }
+    var soundEnabled by remember(settings.soundEnabled) { mutableStateOf(settings.soundEnabled) }
+    var speakTimeEnabled by remember(settings.speakTimeEnabled) { mutableStateOf(settings.speakTimeEnabled) }
+    var speakIntentionEnabled by remember(settings.speakIntentionEnabled) { mutableStateOf(settings.speakIntentionEnabled) }
+    var vibrationEnabled by remember(settings.vibrationEnabled) { mutableStateOf(settings.vibrationEnabled) }
     var darkTheme by remember(settings.darkTheme) { mutableStateOf(settings.darkTheme) }
 
     LazyColumn(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -755,6 +759,58 @@ fun SettingsScreen(
         }
 
         item {
+            Text("Attention Cues", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+        }
+
+        item {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Switch(checked = soundEnabled, onCheckedChange = { soundEnabled = it })
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                    Text("Harmonic Pre-Chime")
+                    Text("Soft 2-note synthesized chime to open auditory attention", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+
+        item {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Switch(checked = speakTimeEnabled, onCheckedChange = { speakTimeEnabled = it })
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                    Text("Announce Time")
+                    Text("Speaks the current time (e.g. \"12:45\") with audio ducking", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+
+        item {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Switch(
+                    checked = speakIntentionEnabled,
+                    onCheckedChange = { speakIntentionEnabled = it },
+                    enabled = speakTimeEnabled
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                    Text("Announce Intention")
+                    Text("Follows time with your primary daily intention", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+
+        item {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Switch(checked = vibrationEnabled, onCheckedChange = { vibrationEnabled = it })
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                    Text("Heartbeat Haptics")
+                    Text("Distinctive tap-pause-pulse vibration signature", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+
+        item {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Switch(checked = darkTheme, onCheckedChange = { darkTheme = it })
                 Spacer(modifier = Modifier.width(10.dp))
@@ -770,6 +826,10 @@ fun SettingsScreen(
                             intervalMinutes = interval.toIntOrNull()?.coerceIn(5, 240) ?: 45,
                             activeStart = activeStart,
                             activeEnd = activeEnd,
+                            soundEnabled = soundEnabled,
+                            speakTimeEnabled = speakTimeEnabled,
+                            speakIntentionEnabled = speakIntentionEnabled,
+                            vibrationEnabled = vibrationEnabled,
                             darkTheme = darkTheme
                         )
                     )
