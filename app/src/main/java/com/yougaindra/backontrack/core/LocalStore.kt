@@ -43,6 +43,7 @@ class LocalStore(context: Context) {
                 speakTimeEnabled = obj.optBoolean("speakTimeEnabled", true),
                 speakIntentionEnabled = obj.optBoolean("speakIntentionEnabled", false),
                 showIntentionInPrompt = obj.optBoolean("showIntentionInPrompt", true),
+                alignToClockBoundaries = obj.optBoolean("alignToClockBoundaries", true),
                 darkTheme = obj.optBoolean("darkTheme", false)
             )
         } catch (e: Exception) {
@@ -64,6 +65,7 @@ class LocalStore(context: Context) {
             put("speakTimeEnabled", settings.speakTimeEnabled)
             put("speakIntentionEnabled", settings.speakIntentionEnabled)
             put("showIntentionInPrompt", settings.showIntentionInPrompt)
+            put("alignToClockBoundaries", settings.alignToClockBoundaries)
             put("darkTheme", settings.darkTheme)
         }
         prefs.edit().putString("settings_json", obj.toString()).apply()

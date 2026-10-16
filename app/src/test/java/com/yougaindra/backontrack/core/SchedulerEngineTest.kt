@@ -61,4 +61,44 @@ class SchedulerEngineTest {
         assertFalse(reconciled.missedWhileClosed)
         assertEquals("sched_$future", reconciled.state.scheduleId)
     }
+
+    @Test
+    fun `snaps 30m session at 10_05 to 10_30 with sufficient runway`() {
+        val settings = baseSettings.copy(intervalMinutes = 30, alignToClockBoundaries = true)
+        val wed1005am = ZonedDateTime.of(2026, 10, 14, 10, 5, 0, 0, zone).toInstant().toEpochMilli()
+        val expected = ZonedDateTime.of(2026, 10, 14, 10, 30, 0, 0, zone).toInstant().toEpochMilli()
+
+        val next = SchedulerEngine.computeNextFireTime(wed1005am, settings, zone)
+        assertEquals(expected, next)
+    }
+
+    @Test
+    fun `skips short runway and snaps 30m session at 10_22 to 11_00`() {
+        val settings = baseSettings.copy(intervalMinutes = 30, alignToClockBoundaries = true)
+        val wed1022am = ZonedDateTime.of(2026, 10, 14, 10, 22, 0, 0, zone).toInstant().toEpochMilli()
+        val expected = ZonedDateTime.of(2026, 10, 14, 11, 0, 0, 0, zone).toInstant().toEpochMilli()
+
+        val next = SchedulerEngine.computeNextFireTime(wed1022am, settings, zone)
+        assertEquals(expected, next)
+    }
+
+    @Test
+    fun `snaps 60m session at 10_15 to 11_00`() {
+        val settings = baseSettings.copy(intervalMinutes = 60, alignToClockBoundaries = true)
+        val wed1015am = ZonedDateTime.of(2026, 10, 14, 10, 15, 0, 0, zone).toInstant().toEpochMilli()
+        val expected = ZonedDateTime.of(2026, 10, 14, 11, 0, 0, 0, zone).toInstant().toEpochMilli()
+
+        val next = SchedulerEngine.computeNextFireTime(wed1015am, settings, zone)
+        assertEquals(expected, next)
+    }
+
+    @Test
+    fun `preserves exact relative interval when alignToClockBoundaries is false`() {
+        val settings = baseSettings.copy(intervalMinutes = 30, alignToClockBoundaries = false)
+        val wed1022am = ZonedDateTime.of(2026, 10, 14, 10, 22, 0, 0, zone).toInstant().toEpochMilli()
+        val expected = wed1022am + 30 * 60_000L
+
+        val next = SchedulerEngine.computeNextFireTime(wed1022am, settings, zone)
+        assertEquals(expected, next)
+    }
 }

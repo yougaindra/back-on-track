@@ -76,13 +76,34 @@ object SchedulerEngine {
         return fromEpochMillis + safeInterval * 60_000L
     }
 
+    private val CLOCK_DIVISORS = setOf(15, 20, 30, 60)
+
     fun computeNextFireTime(
         baseEpochMillis: Long,
         settings: UserSettings,
         zoneId: ZoneId = ZoneId.systemDefault()
     ): Long {
         val safeInterval = clampInterval(settings.intervalMinutes)
-        val rawCandidateMillis = baseEpochMillis + safeInterval * 60_000L
+        val rawCandidateMillis = if (settings.alignToClockBoundaries && safeInterval in CLOCK_DIVISORS) {
+            val zdt = Instant.ofEpochMilli(baseEpochMillis).atZone(zoneId)
+            val truncatedZdt = zdt.withSecond(0).withNano(0)
+            val currentMinute = truncatedZdt.minute
+            val minutesToNextBoundary = safeInterval - (currentMinute % safeInterval)
+            val nextBoundaryZdt = truncatedZdt.plusMinutes(minutesToNextBoundary.toLong())
+            val nextBoundaryMillis = nextBoundaryZdt.toInstant().toEpochMilli()
+
+            val runwayMillis = nextBoundaryMillis - baseEpochMillis
+            val minRunwayMillis = (safeInterval * 60_000L) / 2
+
+            val candidateZdt = if (runwayMillis < minRunwayMillis) {
+                nextBoundaryZdt.plusMinutes(safeInterval.toLong())
+            } else {
+                nextBoundaryZdt
+            }
+            candidateZdt.toInstant().toEpochMilli()
+        } else {
+            baseEpochMillis + safeInterval * 60_000L
+        }
 
         if (!settings.pauseOutsideHours || isWithinActiveWindow(rawCandidateMillis, settings, zoneId)) {
             return rawCandidateMillis

@@ -34,6 +34,7 @@ data class UserSettings(
     val speakTimeEnabled: Boolean = true,
     val speakIntentionEnabled: Boolean = false,
     val showIntentionInPrompt: Boolean = true,
+    val alignToClockBoundaries: Boolean = true,
     val darkTheme: Boolean = false
 )
 

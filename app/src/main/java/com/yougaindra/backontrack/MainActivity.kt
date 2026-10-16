@@ -505,8 +505,19 @@ fun HomeScreen(
                     }
 
                     Text(readout, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                    val alignSuffix = if (settings.alignToClockBoundaries) {
+                        when (settings.intervalMinutes) {
+                            60 -> " (on :00)"
+                            30 -> " (on :00 & :30)"
+                            20 -> " (on :00, :20, :40)"
+                            15 -> " (on :00, :15, :30, :45)"
+                            else -> ""
+                        }
+                    } else {
+                        ""
+                    }
                     Text(
-                        "Every ${settings.intervalMinutes}m · Active ${settings.activeStart}–${settings.activeEnd}",
+                        "Every ${settings.intervalMinutes}m$alignSuffix · Active ${settings.activeStart}–${settings.activeEnd}",
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -725,6 +736,7 @@ fun SettingsScreen(
     var speakTimeEnabled by remember(settings.speakTimeEnabled) { mutableStateOf(settings.speakTimeEnabled) }
     var speakIntentionEnabled by remember(settings.speakIntentionEnabled) { mutableStateOf(settings.speakIntentionEnabled) }
     var vibrationEnabled by remember(settings.vibrationEnabled) { mutableStateOf(settings.vibrationEnabled) }
+    var alignToClockBoundaries by remember(settings.alignToClockBoundaries) { mutableStateOf(settings.alignToClockBoundaries) }
     var darkTheme by remember(settings.darkTheme) { mutableStateOf(settings.darkTheme) }
 
     LazyColumn(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -755,6 +767,24 @@ fun SettingsScreen(
                     label = { Text("Active End") },
                     modifier = Modifier.weight(1f)
                 )
+            }
+        }
+
+        item {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Switch(
+                    checked = alignToClockBoundaries,
+                    onCheckedChange = { alignToClockBoundaries = it }
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                    Text("Snap to clock hours (:00 / :30)")
+                    Text(
+                        "Aligns 15m, 30m, and 60m intervals to clean clock marks",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
 
@@ -830,6 +860,7 @@ fun SettingsScreen(
                             speakTimeEnabled = speakTimeEnabled,
                             speakIntentionEnabled = speakIntentionEnabled,
                             vibrationEnabled = vibrationEnabled,
+                            alignToClockBoundaries = alignToClockBoundaries,
                             darkTheme = darkTheme
                         )
                     )
