@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.yougaindra.backontrack"
+    namespace = "com.yougaindra.shakelight"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.yougaindra.backontrack"
+        applicationId = "com.yougaindra.shakelight"
         minSdk = 26
         targetSdk = 34
         versionCode = 1

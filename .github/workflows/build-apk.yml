@@ -2,7 +2,7 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ "master", "main" ]
+    branches: [ "master", "main", "shake-flashlight", "*" ]
   workflow_dispatch:
 
 jobs:
@@ -31,5 +31,5 @@ jobs:
       - name: Upload Installable APK
         uses: actions/upload-artifact@v4
         with:
-          name: back-on-track-debug-apk
+          name: shake-flashlight-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk

@@ -1,101 +1,35 @@
-# Back On Track 🎯
+# Shake Flashlight ⚡ (Moto Chop-Chop Gesture)
 
-A mindful native Android companion app built with modern Jetpack Compose that keeps you focused on your core daily intentions through gentle, periodic check-ins.
-
----
-
-## 📸 Preview
-
-| Onboarding | Today Screen | Settings |
-|:---:|:---:|:---:|
-| <img src="docs/screenshots/onboarding.png" width="250"> | <img src="docs/screenshots/today.png" width="250"> | <img src="docs/screenshots/settings.png" width="250"> |
+A lightweight native Android utility that turns on/off your phone's camera flashlight with Motorola's iconic double-chop shake gesture. Built with Kotlin, Jetpack Compose, Material 3, and Android Camera2 API.
 
 ---
 
 ## ✨ Features
 
-- **Intention Anchoring**: Define your primary intention, secondary tasks, and next small step for each day.
-- **Gentle Periodic Check-Ins**: Configurable intervals (e.g. every 15, 30, 45, or 60 minutes) to prompt your state of focus.
-- **Smart Active Hours Scheduling**: Automatically pauses notifications outside your chosen schedule (e.g. 09:00 – 17:30) and on weekends, rolling forward cleanly into the next active morning.
-- **Interactive Notification Actions**: Quick responses directly from notification shade (`On track`, `Gentle reset`, `Intentional break`, `Snooze`).
-- **Resilient Background Execution**: Exact alarm triggers via `AlarmManager` with automatic rescheduling on device boot, package update, and time zone changes.
-- **Check-In History**: Review your session logs and response patterns over time.
-- **100% Native & Modern**: Built with Jetpack Compose, Material 3, Coroutines, and AndroidX libraries.
+- **Double-Chop Shake Gesture (Moto Style)**: Two quick wrist chops toggle the flashlight instantly.
+- **Background & Lock Screen Ready**: Runs as a low-overhead foreground service with partial wake lock so it continues working even when your screen is locked.
+- **Pocket Guard (Proximity Detection)**: Uses the proximity sensor to prevent the flashlight from turning on accidentally inside pockets or bags.
+- **Quick Settings Tile**: Add the flashlight tile directly to your Android quick settings pull-down shade.
+- **Customizable Sensitivity**: Low (firm chop), Medium (standard), High (light shake).
+- **Auto Turn-Off Timer**: Automatically shuts off after 3, 5, or 10 minutes to protect battery and prevent LED overheating.
+- **Tactile Haptic Feedback**: Crisp vibration confirmation on toggle.
+- **Start on Boot**: Automatically resumes detection after device reboot.
+- **Modern Jetpack Compose UI**: Hero toggle widget, dark theme, and gesture tuning.
 
 ---
 
-## 🏗️ Project Architecture & Structure
+## 🛠️ Tech Stack & Architecture
 
-```
-back-on-track/
-├── .github/
-│   └── workflows/
-│       └── build-apk.yml         # CI workflow running unit tests & APK build
-├── app/
-│   ├── build.gradle.kts          # Module configuration, Compose & dependencies
-│   ├── proguard-rules.pro        # ProGuard optimization rules
-│   └── src/
-│       ├── main/
-│       │   ├── AndroidManifest.xml
-│       │   ├── java/com/yougaindra/backontrack/
-│       │   │   ├── MainActivity.kt                      # Jetpack Compose UI & screens
-│       │   │   ├── core/
-│       │   │   │   ├── AlarmAndNotificationCoordinator.kt # Exact alarms & notification channels
-│       │   │   │   ├── LocalStore.kt                     # SharedPreferences JSON persistence
-│       │   │   │   └── SchedulerEngine.kt                # Time calculation, hours & rollover logic
-│       │   │   ├── model/
-│       │   │   │   └── DomainModels.kt                   # Domain entities, enums & states
-│       │   │   └── receiver/
-│       │   │       ├── BootAndTimeReceiver.kt            # Re-registers alarms on boot/clock changes
-│       │   │       ├── CheckInAlarmReceiver.kt           # Triggers check-in prompts on alarm fire
-│       │   │       └── NotificationActionReceiver.kt     # Handles user button clicks in notifications
-│       │   └── res/
-│       │       ├── drawable/                             # Vector drawables & notification icons
-│       │       └── mipmap-anydpi-v26/                    # Adaptive app launcher icons
-│       └── test/
-│           └── java/com/yougaindra/backontrack/core/
-│               └── SchedulerEngineTest.kt                # Unit tests for interval & rollover calculations
-├── docs/
-│   └── screenshots/              # App UI preview screenshots
-├── gradle/
-│   └── wrapper/
-│       ├── gradle-wrapper.jar
-│       └── gradle-wrapper.properties
-├── build.gradle.kts              # Root build configuration
-├── gradle.properties             # JVM args and AndroidX flags
-├── gradlew                       # Linux / macOS Gradle wrapper
-├── gradlew.bat                   # Windows Gradle wrapper
-├── logo.svg                      # Brand vector logo
-├── settings.gradle.kts           # Plugin & repository settings
-└── README.md
-```
+- **Language**: Kotlin 2.0
+- **UI**: Jetpack Compose + Material 3
+- **Hardware APIs**: `CameraManager.setTorchMode()`, `SensorManager` (Accelerometer & Proximity)
+- **Background**: Foreground Service (`specialUse` for Android 14+), `TileService` for Quick Settings
 
 ---
 
-## 🚀 Building & Testing
+## 🚀 Building & GitHub Actions
 
-### Prerequisites
-- JDK 17 (or newer)
-- Android SDK (API 34)
-
-### Run Unit Tests
-```bash
-./gradlew testDebugUnitTest
-```
-
-### Build Debug APK
-```bash
-./gradlew assembleDebug
-```
-The output APK will be generated at:
-`app/build/outputs/apk/debug/app-debug.apk`
-
----
-
-## 🤖 Continuous Integration
-
-GitHub Actions workflow (`.github/workflows/build-apk.yml`) automatically runs on every push to `master` or `main`:
-1. Sets up JDK 17 & Gradle 8.7
-2. Runs unit test suite (`gradle testDebugUnitTest`)
-3. Assembles the debug APK (`gradle assembleDebug`)
-4. Uploads the debug APK as a downloadable GitHub Action build artifact (`back-on-track-debug-apk`)
+Every push to this branch triggers the GitHub Actions workflow (`.github/workflows/build-apk.yml`):
+1. Runs unit tests (`ShakeDetectorTest`)
+2. Assembles debug APK (`gradle assembleDebug`)
+3. Uploads the installable APK as an artifact: `shake-flashlight-debug-apk`
