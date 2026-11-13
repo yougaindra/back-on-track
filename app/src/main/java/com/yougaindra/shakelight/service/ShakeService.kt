@@ -18,6 +18,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import com.yougaindra.shakelight.MainActivity
 import com.yougaindra.shakelight.R
+import com.yougaindra.shakelight.core.CameraController
 import com.yougaindra.shakelight.core.FlashlightController
 import com.yougaindra.shakelight.core.ShakeDetector
 import com.yougaindra.shakelight.data.PreferencesManager
@@ -37,6 +38,7 @@ class ShakeService : Service() {
         const val ACTION_START = "com.yougaindra.shakelight.ACTION_START"
         const val ACTION_STOP = "com.yougaindra.shakelight.ACTION_STOP"
         const val ACTION_TOGGLE_TORCH = "com.yougaindra.shakelight.ACTION_TOGGLE_TORCH"
+        const val ACTION_OPEN_CAMERA = "com.yougaindra.shakelight.ACTION_OPEN_CAMERA"
         const val ACTION_UPDATE_SETTINGS = "com.yougaindra.shakelight.ACTION_UPDATE_SETTINGS"
 
         fun start(context: Context) {
@@ -83,6 +85,9 @@ class ShakeService : Service() {
             context = applicationContext,
             onShakeTriggered = {
                 handleShakeTrigger()
+            },
+            onTwistTriggered = {
+                handleTwistTrigger()
             }
         )
 
@@ -114,8 +119,12 @@ class ShakeService : Service() {
                 flashlightController.toggleTorch()
                 val currentSettings = preferencesManager.loadSettings()
                 if (currentSettings.vibrateOnToggle) {
-                    performHaptic(flashlightController.isTorchOn.value)
+                    performTorchHaptic(flashlightController.isTorchOn.value)
                 }
+            }
+
+            ACTION_OPEN_CAMERA -> {
+                CameraController.launchCamera(applicationContext)
             }
 
             ACTION_UPDATE_SETTINGS -> {
@@ -152,34 +161,37 @@ class ShakeService : Service() {
 
         val currentSettings = preferencesManager.loadSettings()
         if (currentSettings.vibrateOnToggle) {
-            performHaptic(newState)
+            performTorchHaptic(newState)
         }
     }
 
-    private fun applySettingsToDetector(settings: com.yougaindra.shakelight.data.AppSettings) {
-        shakeDetector.stateMachine.sensitivity = settings.sensitivity
-        shakeDetector.stateMachine.gestureMode = settings.gestureMode
-        shakeDetector.stateMachine.pocketProtectionEnabled = settings.pocketProtection
+    private fun handleTwistTrigger() {
+        val currentSettings = preferencesManager.loadSettings()
+        if (!currentSettings.isCameraTwistEnabled) return
+
+        if (currentSettings.vibrateOnCamera) {
+            performCameraHaptic()
+        }
+
+        CameraController.launchCamera(applicationContext)
     }
 
-    private fun performHaptic(isTorchOn: Boolean) {
+    private fun applySettingsToDetector(settings: com.yougaindra.shakelight.data.AppSettings) {
+        shakeDetector.shakeStateMachine.sensitivity = settings.sensitivity
+        shakeDetector.shakeStateMachine.gestureMode = settings.gestureMode
+        shakeDetector.shakeStateMachine.pocketProtectionEnabled = settings.pocketProtection
+
+        shakeDetector.twistStateMachine.sensitivity = settings.cameraSensitivity
+        shakeDetector.twistStateMachine.pocketProtectionEnabled = settings.pocketProtection
+    }
+
+    private fun performTorchHaptic(isTorchOn: Boolean) {
         try {
-            val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                val vm = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-                vm.defaultVibrator
-            } else {
-                @Suppress("DEPRECATION")
-                getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-            }
-
-            if (!vibrator.hasVibrator()) return
-
+            val vibrator = getVibrator() ?: return
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 if (isTorchOn) {
-                    // Crisp single pulse for ON
                     vibrator.vibrate(VibrationEffect.createOneShot(70, VibrationEffect.DEFAULT_AMPLITUDE))
                 } else {
-                    // Double pulse for OFF
                     val timings = longArrayOf(0, 45, 60, 45)
                     val amplitudes = intArrayOf(0, 160, 0, 160)
                     if (vibrator.hasAmplitudeControl()) {
@@ -198,6 +210,37 @@ class ShakeService : Service() {
             }
         } catch (_: Exception) {
         }
+    }
+
+    private fun performCameraHaptic() {
+        try {
+            val vibrator = getVibrator() ?: return
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                // Triple crisp buzz for camera
+                val timings = longArrayOf(0, 50, 40, 50, 40, 70)
+                val amplitudes = intArrayOf(0, 200, 0, 200, 0, 240)
+                if (vibrator.hasAmplitudeControl()) {
+                    vibrator.vibrate(VibrationEffect.createWaveform(timings, amplitudes, -1))
+                } else {
+                    vibrator.vibrate(VibrationEffect.createWaveform(timings, -1))
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator.vibrate(longArrayOf(0, 50, 40, 50, 40, 70), -1)
+            }
+        } catch (_: Exception) {
+        }
+    }
+
+    private fun getVibrator(): Vibrator? {
+        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vm = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vm.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+        return if (vibrator.hasVibrator()) vibrator else null
     }
 
     private fun acquireWakeLock() {
@@ -226,10 +269,10 @@ class ShakeService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "Shake Flashlight Service",
+                "Moto Gestures Service",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Keeps shake detection active in the background and when locked"
+                description = "Keeps chop for torch and twist for camera gestures active"
                 setShowBadge(false)
             }
             val manager = getSystemService(NotificationManager::class.java)
@@ -246,29 +289,29 @@ class ShakeService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val toggleIntent = Intent(this, ShakeService::class.java).apply {
+        val toggleTorchIntent = Intent(this, ShakeService::class.java).apply {
             action = ACTION_TOGGLE_TORCH
         }
-        val togglePendingIntent = PendingIntent.getService(
+        val toggleTorchPendingIntent = PendingIntent.getService(
             this,
             1,
-            toggleIntent,
+            toggleTorchIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val stopIntent = Intent(this, ShakeService::class.java).apply {
-            action = ACTION_STOP
+        val openCameraIntent = Intent(this, ShakeService::class.java).apply {
+            action = ACTION_OPEN_CAMERA
         }
-        val stopPendingIntent = PendingIntent.getService(
+        val openCameraPendingIntent = PendingIntent.getService(
             this,
             2,
-            stopIntent,
+            openCameraIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val title = if (isTorchOn) "⚡ Flashlight is ON" else "Shake Flashlight Active"
-        val statusText = if (isTorchOn) "Double-chop to turn off" else "Double-chop your phone to turn on"
-        val toggleActionText = if (isTorchOn) "Turn Off" else "Turn On"
+        val title = if (isTorchOn) "⚡ Flashlight is ON" else "Moto Gestures Active"
+        val statusText = if (isTorchOn) "Double-chop to turn off" else "Chop for Torch · Twist for Camera"
+        val toggleActionText = if (isTorchOn) "Turn Off" else "Torch ON"
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(title)
@@ -278,8 +321,8 @@ class ShakeService : Service() {
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
-            .addAction(0, toggleActionText, togglePendingIntent)
-            .addAction(0, "Turn Off Service", stopPendingIntent)
+            .addAction(0, toggleActionText, toggleTorchPendingIntent)
+            .addAction(0, "Open Camera", openCameraPendingIntent)
             .build()
     }
 

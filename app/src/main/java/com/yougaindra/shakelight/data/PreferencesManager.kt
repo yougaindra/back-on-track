@@ -12,8 +12,11 @@ data class AppSettings(
     val isServiceEnabled: Boolean = true,
     val sensitivity: Sensitivity = Sensitivity.MEDIUM,
     val gestureMode: GestureMode = GestureMode.DOUBLE_CHOP,
+    val isCameraTwistEnabled: Boolean = true,
+    val cameraSensitivity: Sensitivity = Sensitivity.MEDIUM,
     val pocketProtection: Boolean = true,
     val vibrateOnToggle: Boolean = true,
+    val vibrateOnCamera: Boolean = true,
     val startOnBoot: Boolean = true,
     val autoTurnOffMinutes: Int = 5
 )
@@ -34,6 +37,13 @@ class PreferencesManager(context: Context) {
             Sensitivity.MEDIUM
         }
 
+        val camSensName = prefs.getString("camera_sensitivity", Sensitivity.MEDIUM.name) ?: Sensitivity.MEDIUM.name
+        val cameraSensitivity = try {
+            Sensitivity.valueOf(camSensName)
+        } catch (_: Exception) {
+            Sensitivity.MEDIUM
+        }
+
         val modeName = prefs.getString("gesture_mode", GestureMode.DOUBLE_CHOP.name) ?: GestureMode.DOUBLE_CHOP.name
         val gestureMode = try {
             GestureMode.valueOf(modeName)
@@ -45,8 +55,11 @@ class PreferencesManager(context: Context) {
             isServiceEnabled = prefs.getBoolean("service_enabled", true),
             sensitivity = sensitivity,
             gestureMode = gestureMode,
+            isCameraTwistEnabled = prefs.getBoolean("camera_twist_enabled", true),
+            cameraSensitivity = cameraSensitivity,
             pocketProtection = prefs.getBoolean("pocket_protection", true),
             vibrateOnToggle = prefs.getBoolean("vibrate_on_toggle", true),
+            vibrateOnCamera = prefs.getBoolean("vibrate_on_camera", true),
             startOnBoot = prefs.getBoolean("start_on_boot", true),
             autoTurnOffMinutes = prefs.getInt("auto_turn_off_minutes", 5)
         )
@@ -57,8 +70,11 @@ class PreferencesManager(context: Context) {
             .putBoolean("service_enabled", newSettings.isServiceEnabled)
             .putString("sensitivity", newSettings.sensitivity.name)
             .putString("gesture_mode", newSettings.gestureMode.name)
+            .putBoolean("camera_twist_enabled", newSettings.isCameraTwistEnabled)
+            .putString("camera_sensitivity", newSettings.cameraSensitivity.name)
             .putBoolean("pocket_protection", newSettings.pocketProtection)
             .putBoolean("vibrate_on_toggle", newSettings.vibrateOnToggle)
+            .putBoolean("vibrate_on_camera", newSettings.vibrateOnCamera)
             .putBoolean("start_on_boot", newSettings.startOnBoot)
             .putInt("auto_turn_off_minutes", newSettings.autoTurnOffMinutes)
             .apply()

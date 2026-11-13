@@ -6,7 +6,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.PowerManager
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -36,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.yougaindra.shakelight.core.CameraController
 import com.yougaindra.shakelight.core.FlashlightController
 import com.yougaindra.shakelight.core.GestureMode
 import com.yougaindra.shakelight.core.Sensitivity
@@ -71,6 +71,9 @@ class MainActivity : ComponentActivity() {
                     onUpdateSettings = { updated ->
                         preferencesManager.updateSettings(updated)
                         ShakeService.updateSettings(this)
+                    },
+                    onTestCamera = {
+                        CameraController.launchCamera(this)
                     }
                 )
             }
@@ -79,7 +82,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Start UI shake listener for live visualizer while app is on screen
+        // Start UI gesture listener for live visualizer while app is open
         if (uiShakeDetector == null) {
             val settings = preferencesManager.loadSettings()
             uiShakeDetector = ShakeDetector(
@@ -87,11 +90,19 @@ class MainActivity : ComponentActivity() {
                 onShakeTriggered = {
                     val newState = !flashlightController.isTorchOn.value
                     flashlightController.setTorch(newState)
+                },
+                onTwistTriggered = {
+                    val currentSettings = preferencesManager.loadSettings()
+                    if (currentSettings.isCameraTwistEnabled) {
+                        CameraController.launchCamera(this)
+                    }
                 }
             ).apply {
-                stateMachine.sensitivity = settings.sensitivity
-                stateMachine.gestureMode = settings.gestureMode
-                stateMachine.pocketProtectionEnabled = settings.pocketProtection
+                shakeStateMachine.sensitivity = settings.sensitivity
+                shakeStateMachine.gestureMode = settings.gestureMode
+                shakeStateMachine.pocketProtectionEnabled = settings.pocketProtection
+                twistStateMachine.sensitivity = settings.cameraSensitivity
+                twistStateMachine.pocketProtectionEnabled = settings.pocketProtection
                 startListening()
             }
         } else {
@@ -122,7 +133,8 @@ fun MainScreen(
     preferencesManager: PreferencesManager,
     flashlightController: FlashlightController,
     onToggleService: (Boolean) -> Unit,
-    onUpdateSettings: (com.yougaindra.shakelight.data.AppSettings) -> Unit
+    onUpdateSettings: (com.yougaindra.shakelight.data.AppSettings) -> Unit,
+    onTestCamera: () -> Unit
 ) {
     val context = LocalContext.current
     val settings by preferencesManager.settings.collectAsState()
@@ -146,9 +158,9 @@ fun MainScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text("Shake Flashlight", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                        Text("Moto Gestures", fontWeight = FontWeight.Bold, fontSize = 20.sp)
                         Text(
-                            "Moto Chop-Chop Gesture",
+                            "Chop for Torch · Twist for Camera",
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -200,16 +212,16 @@ fun MainScreen(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                "Shake Detection Service",
+                                "Background Gesture Service",
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 16.sp
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 if (settings.isServiceEnabled)
-                                    "Active · Ready while screen is locked"
+                                    "Active · Gestures work while screen is locked"
                                 else
-                                    "Inactive · Shake gestures paused",
+                                    "Inactive · Gestures paused",
                                 fontSize = 13.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -222,31 +234,111 @@ fun MainScreen(
                 }
             }
 
-            // Gesture Motion Calibrator
+            // Quick Capture (Camera Twist) Section Card
             item {
-                GestureCalibratorCard(settings = settings)
+                Card(
+                    shape = RoundedCornerShape(18.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (settings.isCameraTwistEnabled)
+                            Color(0xFF0D47A1).copy(alpha = 0.25f)
+                        else
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(18.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("📸", fontSize = 24.sp)
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column {
+                                    Text(
+                                        "Quick Capture Camera",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 16.sp
+                                    )
+                                    Text(
+                                        "Twist wrist twice to open camera",
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                            Switch(
+                                checked = settings.isCameraTwistEnabled,
+                                onCheckedChange = {
+                                    onUpdateSettings(settings.copy(isCameraTwistEnabled = it))
+                                }
+                            )
+                        }
+
+                        if (settings.isCameraTwistEnabled) {
+                            Spacer(modifier = Modifier.height(14.dp))
+                            Text(
+                                "Camera Twist Sensitivity",
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 13.sp
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Sensitivity.values().forEach { sens ->
+                                    val selected = settings.cameraSensitivity == sens
+                                    FilterChip(
+                                        selected = selected,
+                                        onClick = {
+                                            onUpdateSettings(settings.copy(cameraSensitivity = sens))
+                                        },
+                                        label = { Text(sens.name) },
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            OutlinedButton(
+                                onClick = onTestCamera,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Test Open Camera Now")
+                            }
+                        }
+                    }
+                }
             }
 
-            // Gesture Settings Section
+            // Gesture Guide Card
+            item {
+                GestureGuideCard(settings = settings)
+            }
+
+            // Torch Gesture Controls Section
             item {
                 Text(
-                    "Gesture & Tuning",
+                    "⚡ Flashlight Settings",
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp,
-                    modifier = Modifier.padding(top = 6.dp)
+                    modifier = Modifier.padding(top = 4.dp)
                 )
             }
 
-            // Gesture Mode (Double Chop vs Single Shake)
+            // Torch Gesture Mode (Double Chop vs Single Shake)
             item {
                 Card(
                     shape = RoundedCornerShape(16.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Gesture Style", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                        Text("Chop Gesture Style", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
                         Text(
-                            "Choose between Motorola's classic two-stroke chop or a single firm shake",
+                            "Two-stroke downward chop (Motorola standard) or single shake",
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -271,16 +363,16 @@ fun MainScreen(
                 }
             }
 
-            // Sensitivity Selector
+            // Torch Sensitivity Selector
             item {
                 Card(
                     shape = RoundedCornerShape(16.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Sensitivity", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                        Text("Chop Sensitivity", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
                         Text(
-                            "Standard Medium is tuned for natural, intentional wrist chops",
+                            "Adjust the acceleration threshold needed to toggle the light",
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -305,6 +397,16 @@ fun MainScreen(
                 }
             }
 
+            // Global Guard & Haptic Settings
+            item {
+                Text(
+                    "🛡️ Guards & Feedback",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 17.sp,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
+
             // Pocket Protection Switch
             item {
                 Card(
@@ -320,7 +422,7 @@ fun MainScreen(
                         Column(modifier = Modifier.weight(1f)) {
                             Text("Pocket Guard", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
                             Text(
-                                "Uses proximity sensor to prevent flashlight from turning on in pocket or bag",
+                                "Uses proximity sensor to prevent flashlight or camera from triggering in pockets or bags",
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -350,9 +452,9 @@ fun MainScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Vibrate on Toggle", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                                Text("Vibrate on Torch Toggle", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
                                 Text(
-                                    "Tactile haptic feedback confirmation",
+                                    "Tactile haptic feedback when light turns on/off",
                                     fontSize = 12.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -372,9 +474,31 @@ fun MainScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Auto Turn-Off", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                                Text("Vibrate on Camera Launch", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
                                 Text(
-                                    "Prevents accidental battery drain (${if (settings.autoTurnOffMinutes == 0) "Disabled" else "${settings.autoTurnOffMinutes} minutes"})",
+                                    "Triple haptic pulse when camera opens",
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Switch(
+                                checked = settings.vibrateOnCamera,
+                                onCheckedChange = {
+                                    onUpdateSettings(settings.copy(vibrateOnCamera = it))
+                                }
+                            )
+                        }
+
+                        HorizontalDivider()
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("Auto Turn-Off Torch", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                                Text(
+                                    "Prevents battery drain (${if (settings.autoTurnOffMinutes == 0) "Disabled" else "${settings.autoTurnOffMinutes} minutes"})",
                                     fontSize = 12.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -439,7 +563,7 @@ fun MainScreen(
                         Text("💡 Smooth Background Performance", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            "To ensure shake detection runs reliably when your phone is sleeping, set battery usage for Shake Flashlight to 'Unrestricted' in your Android App Settings.",
+                            "To ensure both gestures run smoothly when your phone is locked, set battery usage for this app to 'Unrestricted' in your Android Settings.",
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -558,7 +682,7 @@ fun FlashlightHeroWidget(
 }
 
 @Composable
-fun GestureCalibratorCard(
+fun GestureGuideCard(
     settings: com.yougaindra.shakelight.data.AppSettings
 ) {
     Card(
@@ -569,30 +693,38 @@ fun GestureCalibratorCard(
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("Gesture Guide", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
-                AssistChip(
-                    onClick = { },
-                    label = {
-                        Text(
-                            "Threshold: ${settings.sensitivity.threshold.toInt()} m/s²",
-                            fontSize = 11.sp
-                        )
-                    }
-                )
+            Text("Motorola Gesture Guide", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(verticalAlignment = Alignment.Top) {
+                Text("⚡", fontSize = 18.sp)
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                    Text("Chop Twice for Flashlight", fontWeight = FontWeight.Medium, fontSize = 14.sp)
+                    Text(
+                        "Hold phone upright and make two quick, firm downward chopping motions with your wrist.",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(10.dp))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(10.dp))
 
-            Text(
-                text = "Hold your phone naturally and do two firm wrist-snapping downward chopping motions. Practice your chop now to verify your gesture!",
-                fontSize = 13.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Row(verticalAlignment = Alignment.Top) {
+                Text("📸", fontSize = 18.sp)
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                    Text("Twist Twice for Camera", fontWeight = FontWeight.Medium, fontSize = 14.sp)
+                    Text(
+                        "Hold phone and twist your wrist back and forth twice (like turning a doorknob). Opens camera even from lock screen.",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
         }
     }
 }
