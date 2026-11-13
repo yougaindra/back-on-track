@@ -74,7 +74,7 @@ class ShakeStateMachine(
      */
     fun onDeltaSample(deltaA: Float, timeNowMs: Long): Boolean {
         // Enforce cooldown after a successful trigger to prevent bounce/rebound false triggers
-        if (timeNowMs - lastTriggerTime < TRIGGER_COOLDOWN_MS) {
+        if (lastTriggerTime > 0L && timeNowMs - lastTriggerTime < TRIGGER_COOLDOWN_MS) {
             return false
         }
 

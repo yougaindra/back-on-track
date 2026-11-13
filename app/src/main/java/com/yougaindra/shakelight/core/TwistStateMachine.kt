@@ -46,7 +46,7 @@ class TwistStateMachine(
         timeNowMs: Long
     ): Boolean {
         // Enforce cooldown after a successful trigger
-        if (timeNowMs - lastTriggerTime < TRIGGER_COOLDOWN_MS) {
+        if (lastTriggerTime > 0L && timeNowMs - lastTriggerTime < TRIGGER_COOLDOWN_MS) {
             return false
         }
 
