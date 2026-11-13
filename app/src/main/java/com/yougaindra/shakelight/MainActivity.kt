@@ -383,15 +383,31 @@ fun MainScreen(
                         ) {
                             Sensitivity.values().forEach { sens ->
                                 val selected = settings.sensitivity == sens
+                                val chipText = when (sens) {
+                                    Sensitivity.LOW -> "Low (Firm)"
+                                    Sensitivity.MEDIUM -> "Medium"
+                                    Sensitivity.HIGH -> "High"
+                                }
                                 FilterChip(
                                     selected = selected,
                                     onClick = {
                                         onUpdateSettings(settings.copy(sensitivity = sens))
                                     },
-                                    label = { Text(sens.name) },
+                                    label = { Text(chipText, fontSize = 12.sp) },
                                     modifier = Modifier.weight(1f)
                                 )
                             }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("🛡️", fontSize = 13.sp)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                "Smart Walk-Guard active: sustained footsteps are automatically filtered to prevent false triggers.",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         }
                     }
                 }

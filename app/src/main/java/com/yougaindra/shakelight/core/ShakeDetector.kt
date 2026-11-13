@@ -54,7 +54,7 @@ class ShakeDetector(
     fun stopListening() {
         if (!isListening) return
         sensorManager.unregisterListener(this)
-        shakeStateMachine.reset()
+        shakeStateMachine.resetAll()
         twistStateMachine.reset()
         _currentDeltaA.value = 0f
         _currentAngularSpeed.value = 0f
@@ -74,7 +74,7 @@ class ShakeDetector(
                 val deltaA = abs(magnitude - ShakeStateMachine.STANDARD_GRAVITY)
                 _currentDeltaA.value = deltaA
 
-                val triggered = shakeStateMachine.onDeltaSample(deltaA, now)
+                val triggered = shakeStateMachine.onSample(x, y, z, now)
                 if (triggered) {
                     onShakeTriggered()
                 }

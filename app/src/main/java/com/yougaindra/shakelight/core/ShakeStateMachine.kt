@@ -1,9 +1,11 @@
 package com.yougaindra.shakelight.core
 
+import kotlin.math.abs
+
 enum class Sensitivity(val label: String, val threshold: Float) {
-    LOW("Low (Firm Chop)", 17.5f),
-    MEDIUM("Medium (Standard)", 13.5f),
-    HIGH("High (Light Shake)", 10.0f)
+    LOW("Low (Firm Chop · Walk-Proof)", 25.0f),
+    MEDIUM("Medium (Standard Moto)", 19.5f),
+    HIGH("High (Light Shake)", 15.0f)
 }
 
 enum class GestureMode(val label: String, val requiredChops: Int) {
@@ -14,6 +16,7 @@ enum class GestureMode(val label: String, val requiredChops: Int) {
 /**
  * Pure state machine detecting the Motorola "Chop-Chop" double-stroke gesture or single shake.
  * Separated from Android APIs so it can be 100% verified with unit tests.
+ * Includes walking/gait cadence suppression to avoid false positives when walking fast or jogging.
  */
 class ShakeStateMachine(
     var sensitivity: Sensitivity = Sensitivity.MEDIUM,
@@ -21,10 +24,17 @@ class ShakeStateMachine(
     var pocketProtectionEnabled: Boolean = true
 ) {
     companion object {
-        const val MIN_TIME_BETWEEN_CHOPS_MS = 140L
-        const val MAX_CHOP_WINDOW_MS = 800L
-        const val TRIGGER_COOLDOWN_MS = 650L
+        const val MIN_TIME_BETWEEN_CHOPS_MS = 160L
+        const val MAX_CHOP_WINDOW_MS = 750L
+        const val TRIGGER_COOLDOWN_MS = 900L
         const val STANDARD_GRAVITY = 9.80665f
+
+        // Gait / walking detection parameters
+        const val STEP_DETECTION_THRESHOLD = 7.5f     // deltaA threshold to detect footstep impact
+        const val MIN_STEP_INTERVAL_MS = 220L         // fastest possible cadence (~270 steps/min)
+        const val MAX_STEP_INTERVAL_MS = 700L         // slowest walking cadence (~85 steps/min)
+        const val GAIT_HISTORY_WINDOW_MS = 2200L      // rolling window to analyze walking rhythm
+        const val MIN_STEPS_FOR_GAIT = 3              // 3 consecutive steps = active walking pattern
     }
 
     private var chopCount = 0
@@ -32,7 +42,17 @@ class ShakeStateMachine(
     private var lastChopTime = 0L
     private var lastTriggerTime = 0L
 
+    // Gait detection state
+    private val recentStepTimes = mutableListOf<Long>()
+    private var lastStepTime = 0L
+
     var isPocketCovered: Boolean = false
+
+    /**
+     * Checks if current user movement matches a sustained walking or running cadence.
+     */
+    val isWalkingCadenceActive: Boolean
+        get() = recentStepTimes.size >= MIN_STEPS_FOR_GAIT
 
     /**
      * Feed raw 3-axis acceleration.
@@ -45,7 +65,7 @@ class ShakeStateMachine(
         timeNowMs: Long
     ): Boolean {
         val magnitude = kotlin.math.sqrt((x * x + y * y + z * z).toDouble()).toFloat()
-        val deltaA = kotlin.math.abs(magnitude - STANDARD_GRAVITY)
+        val deltaA = abs(magnitude - STANDARD_GRAVITY)
         return onDeltaSample(deltaA, timeNowMs)
     }
 
@@ -64,11 +84,23 @@ class ShakeStateMachine(
             return false
         }
 
+        // 1. Maintain gait / walking step history
+        updateGaitTracking(deltaA, timeNowMs)
+
         // If below sensitivity threshold, check if active window expired
         if (deltaA < sensitivity.threshold) {
             if (chopCount > 0 && timeNowMs - firstChopTime > MAX_CHOP_WINDOW_MS) {
                 reset()
             }
+            return false
+        }
+
+        // 2. Walking cadence suppression:
+        // If the user has been rhythmically walking/running (3+ steps in cadence),
+        // suppress step impacts. Only allow an exceptionally firm intentional chop (>= threshold * 1.35)
+        // to override walking.
+        if (isWalkingCadenceActive && deltaA < sensitivity.threshold * 1.35f) {
+            chopCount = 0
             return false
         }
 
@@ -99,9 +131,40 @@ class ShakeStateMachine(
         }
     }
 
+    private fun updateGaitTracking(deltaA: Float, timeNowMs: Long) {
+        // Purge expired step history
+        val iterator = recentStepTimes.iterator()
+        while (iterator.hasNext()) {
+            if (timeNowMs - iterator.next() > GAIT_HISTORY_WINDOW_MS) {
+                iterator.remove()
+            }
+        }
+
+        // Detect new step impact
+        if (deltaA >= STEP_DETECTION_THRESHOLD) {
+            if (timeNowMs - lastStepTime >= MIN_STEP_INTERVAL_MS) {
+                val interval = timeNowMs - lastStepTime
+                if (lastStepTime == 0L || interval <= MAX_STEP_INTERVAL_MS) {
+                    recentStepTimes.add(timeNowMs)
+                } else {
+                    // Cadence was broken (e.g. paused), restart step count
+                    recentStepTimes.clear()
+                    recentStepTimes.add(timeNowMs)
+                }
+                lastStepTime = timeNowMs
+            }
+        }
+    }
+
     fun reset() {
         chopCount = 0
         firstChopTime = 0L
         lastChopTime = 0L
+    }
+
+    fun resetAll() {
+        reset()
+        recentStepTimes.clear()
+        lastStepTime = 0L
     }
 }

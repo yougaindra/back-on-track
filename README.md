@@ -13,6 +13,7 @@ Built with Kotlin, Jetpack Compose, Material 3, Android Camera2, and hardware Se
 - **Double-Chop (Flashlight)**: Two quick wrist chops toggle the flashlight instantly.
 - **Double-Twist (Quick Capture Camera)**: Twist your wrist back and forth twice (like turning a doorknob) to open the camera, even when your phone is locked.
 - **Lock Screen Ready**: Uses secure camera intents (`INTENT_ACTION_STILL_IMAGE_CAMERA_SECURE`) and full-screen intents so the camera opens directly without needing to unlock first.
+- **Smart Walk-Guard & Gait Filter**: Automatically tracks rhythmic footstep cadence to filter out fast walking, running, and bouncing, preventing accidental flashlight triggers.
 - **Background Service**: Low-overhead foreground service (`specialUse` for Android 14+) with partial wake lock so both gestures respond immediately with screen off.
 - **Pocket Guard (Proximity Sensor)**: Suppresses both gestures when the phone is in your pocket, purse, or face-down on a desk.
 - **Quick Settings Tile**: Android pull-down quick settings tile to toggle the flashlight with a single tap.
