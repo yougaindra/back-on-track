@@ -41,15 +41,14 @@ object CameraController {
         } catch (_: Exception) {
         }
 
-        // 2. Also trigger via high-priority full-screen intent so it works over lockscreen
-        // and bypasses Android 10+ background activity start restrictions
+        // 2. Also post high-priority launch notification so user can tap if OEM blocks background launch
         try {
-            launchViaFullScreenIntent(appContext, cameraIntent)
+            sendLaunchNotification(appContext, cameraIntent)
         } catch (_: Exception) {
         }
     }
 
-    private fun launchViaFullScreenIntent(context: Context, cameraIntent: Intent) {
+    private fun sendLaunchNotification(context: Context, cameraIntent: Intent) {
         val pendingIntent = PendingIntent.getActivity(
             context,
             NOTIFICATION_ID,
@@ -76,10 +75,9 @@ object CameraController {
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_camera)
             .setContentTitle("Quick Capture")
-            .setContentText("Opening Camera...")
-            .setPriority(NotificationCompat.PRIORITY_MAX)
-            .setCategory(NotificationCompat.CATEGORY_ALARM)
-            .setFullScreenIntent(pendingIntent, true)
+            .setContentText("Tap to open Camera")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .setTimeoutAfter(3500L)
             .build()
