@@ -303,6 +303,53 @@ fun MainScreen(
 
                             Spacer(modifier = Modifier.height(12.dp))
 
+                            if (!CameraController.canDrawOverlays(context)) {
+                                Card(
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
+                                    ),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Column(modifier = Modifier.padding(12.dp)) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text("⚡", fontSize = 16.sp)
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text(
+                                                "Instant Camera Launch",
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 13.sp
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            "Allow 'Appear on top' so twisting your wrist pops up the camera directly without sending a notification.",
+                                            fontSize = 11.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Button(
+                                            onClick = {
+                                                try {
+                                                    val intent = Intent(
+                                                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                                        Uri.parse("package:${context.packageName}")
+                                                    )
+                                                    context.startActivity(intent)
+                                                } catch (_: Exception) {
+                                                    val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+                                                    context.startActivity(intent)
+                                                }
+                                            },
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Text("Allow 'Appear on Top'")
+                                        }
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(10.dp))
+                            }
+
                             OutlinedButton(
                                 onClick = onTestCamera,
                                 modifier = Modifier.fillMaxWidth()
