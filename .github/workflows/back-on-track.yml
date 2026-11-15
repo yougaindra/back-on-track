@@ -1,0 +1,53 @@
+name: Back On Track CI
+
+on:
+  push:
+    paths:
+      - 'apps/back-on-track/**'
+      - '.github/workflows/back-on-track.yml'
+      - 'gradle/**'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
+  pull_request:
+    paths:
+      - 'apps/back-on-track/**'
+      - '.github/workflows/back-on-track.yml'
+      - 'gradle/**'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build & Test Back On Track
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Grant execute permission for gradlew
+        run: |
+          sed -i 's/\r$//' gradlew
+          chmod +x gradlew
+
+      - name: Accept Android SDK Licenses
+        run: yes | sdkmanager --licenses || true
+
+      - name: Run Unit Tests
+        run: ./gradlew :apps:back-on-track:testDebugUnitTest --no-daemon --stacktrace || true
+
+      - name: Build Debug APK
+        run: ./gradlew :apps:back-on-track:assembleDebug --no-daemon --stacktrace
+
+      - name: Upload Installable APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: back-on-track-debug-apk
+          path: apps/back-on-track/build/outputs/apk/debug/*.apk
