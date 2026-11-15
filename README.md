@@ -1,101 +1,41 @@
-# Back On Track 🎯
+# Moto Gestures ⚡📸 (Torch & Quick Capture)
 
-A mindful native Android companion app built with modern Jetpack Compose that keeps you focused on your core daily intentions through gentle, periodic check-ins.
+A lightweight native Android utility that brings Motorola's two most loved gestures to any Android device:
+1. **Double-Chop for Flashlight** ⚡
+2. **Double-Twist for Camera (Quick Capture)** 📸
 
----
-
-## 📸 Preview
-
-| Onboarding | Today Screen | Settings |
-|:---:|:---:|:---:|
-| <img src="docs/screenshots/onboarding.png" width="250"> | <img src="docs/screenshots/today.png" width="250"> | <img src="docs/screenshots/settings.png" width="250"> |
+Built with Kotlin, Jetpack Compose, Material 3, Android Camera2, and hardware Sensor APIs.
 
 ---
 
 ## ✨ Features
 
-- **Intention Anchoring**: Define your primary intention, secondary tasks, and next small step for each day.
-- **Gentle Periodic Check-Ins**: Configurable intervals (e.g. every 15, 30, 45, or 60 minutes) to prompt your state of focus.
-- **Smart Active Hours Scheduling**: Automatically pauses notifications outside your chosen schedule (e.g. 09:00 – 17:30) and on weekends, rolling forward cleanly into the next active morning.
-- **Interactive Notification Actions**: Quick responses directly from notification shade (`On track`, `Gentle reset`, `Intentional break`, `Snooze`).
-- **Resilient Background Execution**: Exact alarm triggers via `AlarmManager` with automatic rescheduling on device boot, package update, and time zone changes.
-- **Check-In History**: Review your session logs and response patterns over time.
-- **100% Native & Modern**: Built with Jetpack Compose, Material 3, Coroutines, and AndroidX libraries.
+- **Double-Chop (Flashlight)**: Two quick wrist chops toggle the flashlight instantly.
+- **Double-Twist (Quick Capture Camera)**: Twist your wrist back and forth twice (like turning a doorknob) to open the camera, even when your phone is locked.
+- **Lock Screen Ready**: Uses secure camera intents (`INTENT_ACTION_STILL_IMAGE_CAMERA_SECURE`) and full-screen intents so the camera opens directly without needing to unlock first.
+- **Smart Walk-Guard & Gait Filter**: Automatically tracks rhythmic footstep cadence to filter out fast walking, running, and bouncing, preventing accidental flashlight triggers.
+- **Background Service**: Low-overhead foreground service (`specialUse` for Android 14+) with partial wake lock so both gestures respond immediately with screen off.
+- **Pocket Guard (Proximity Sensor)**: Suppresses both gestures when the phone is in your pocket, purse, or face-down on a desk.
+- **Quick Settings Tile**: Android pull-down quick settings tile to toggle the flashlight with a single tap.
+- **Customizable Sensitivity**: Independent sensitivity tuning for chop-chop and camera twist (Low, Medium, High).
+- **Haptic Feedback**: Single pulse on torch ON, double pulse on torch OFF, triple buzz on camera launch.
+- **Auto Turn-Off**: Shuts off flashlight after 3, 5, or 10 minutes to protect battery and prevent LED overheating.
+- **Start on Boot**: Automatically resumes detection after phone reboot.
 
 ---
 
-## 🏗️ Project Architecture & Structure
+## 🛠️ Tech Stack & Architecture
 
-```
-back-on-track/
-├── .github/
-│   └── workflows/
-│       └── build-apk.yml         # CI workflow running unit tests & APK build
-├── app/
-│   ├── build.gradle.kts          # Module configuration, Compose & dependencies
-│   ├── proguard-rules.pro        # ProGuard optimization rules
-│   └── src/
-│       ├── main/
-│       │   ├── AndroidManifest.xml
-│       │   ├── java/com/yougaindra/backontrack/
-│       │   │   ├── MainActivity.kt                      # Jetpack Compose UI & screens
-│       │   │   ├── core/
-│       │   │   │   ├── AlarmAndNotificationCoordinator.kt # Exact alarms & notification channels
-│       │   │   │   ├── LocalStore.kt                     # SharedPreferences JSON persistence
-│       │   │   │   └── SchedulerEngine.kt                # Time calculation, hours & rollover logic
-│       │   │   ├── model/
-│       │   │   │   └── DomainModels.kt                   # Domain entities, enums & states
-│       │   │   └── receiver/
-│       │   │       ├── BootAndTimeReceiver.kt            # Re-registers alarms on boot/clock changes
-│       │   │       ├── CheckInAlarmReceiver.kt           # Triggers check-in prompts on alarm fire
-│       │   │       └── NotificationActionReceiver.kt     # Handles user button clicks in notifications
-│       │   └── res/
-│       │       ├── drawable/                             # Vector drawables & notification icons
-│       │       └── mipmap-anydpi-v26/                    # Adaptive app launcher icons
-│       └── test/
-│           └── java/com/yougaindra/backontrack/core/
-│               └── SchedulerEngineTest.kt                # Unit tests for interval & rollover calculations
-├── docs/
-│   └── screenshots/              # App UI preview screenshots
-├── gradle/
-│   └── wrapper/
-│       ├── gradle-wrapper.jar
-│       └── gradle-wrapper.properties
-├── build.gradle.kts              # Root build configuration
-├── gradle.properties             # JVM args and AndroidX flags
-├── gradlew                       # Linux / macOS Gradle wrapper
-├── gradlew.bat                   # Windows Gradle wrapper
-├── logo.svg                      # Brand vector logo
-├── settings.gradle.kts           # Plugin & repository settings
-└── README.md
-```
+- **Language**: Kotlin 2.0
+- **UI**: Jetpack Compose + Material 3
+- **Sensors**: Accelerometer (Chop-Chop), Gyroscope (Twist), Proximity (Pocket Guard)
+- **Background Execution**: Foreground Service with `specialUse`, `TileService` for Quick Settings
 
 ---
 
-## 🚀 Building & Testing
+## 🚀 Building & GitHub Actions
 
-### Prerequisites
-- JDK 17 (or newer)
-- Android SDK (API 34)
-
-### Run Unit Tests
-```bash
-./gradlew testDebugUnitTest
-```
-
-### Build Debug APK
-```bash
-./gradlew assembleDebug
-```
-The output APK will be generated at:
-`app/build/outputs/apk/debug/app-debug.apk`
-
----
-
-## 🤖 Continuous Integration
-
-GitHub Actions workflow (`.github/workflows/build-apk.yml`) automatically runs on every push to `master` or `main`:
-1. Sets up JDK 17 & Gradle 8.7
-2. Runs unit test suite (`gradle testDebugUnitTest`)
-3. Assembles the debug APK (`gradle assembleDebug`)
-4. Uploads the debug APK as a downloadable GitHub Action build artifact (`back-on-track-debug-apk`)
+Every push to this branch triggers the GitHub Actions CI workflow (`.github/workflows/build-apk.yml`):
+1. Runs automated unit tests (`ShakeDetectorTest` & `TwistDetectorTest`)
+2. Assembles debug APK (`gradle assembleDebug`)
+3. Uploads the installable APK as an artifact: `shake-flashlight-debug-apk`

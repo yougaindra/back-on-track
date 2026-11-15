@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Camera Lens & Aperture Outer Ring (Electric Cyan) -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M54,54m-23,0a23,23 0,1 1,46 0a23,23 0,1 1,-46 0"
+        android:strokeWidth="3.2"
+        android:strokeColor="#00E5FF" />
+
+    <!-- Lens Glass Subtle Fill -->
+    <path
+        android:fillColor="#1500E5FF"
+        android:pathData="M54,54m-20,0a20,20 0,1 1,40 0a20,20 0,1 1,-40 0" />
+
+    <!-- Lens Reflex Arc -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M40,43 A20,20 0 0,1 68,43"
+        android:strokeWidth="2"
+        android:strokeColor="#80FFFFFF"
+        android:strokeLineCap="round" />
+
+    <!-- Motion Twist Rotation Arc (Camera Gesture) -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M78,39 C83,47 83,61 77,70"
+        android:strokeWidth="2.5"
+        android:strokeColor="#29B6F6"
+        android:strokeLineCap="round" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M77,70 L82,65"
+        android:strokeWidth="2.5"
+        android:strokeColor="#29B6F6"
+        android:strokeLineCap="round" />
+
+    <!-- Motion Chop Strokes (Torch Gesture) -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M31,40 L28,49"
+        android:strokeWidth="2.5"
+        android:strokeColor="#FFD54F"
+        android:strokeLineCap="round" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M27,53 L25,62"
+        android:strokeWidth="2.5"
+        android:strokeColor="#FFCA28"
+        android:strokeLineCap="round" />
+
+    <!-- Center Electric Lightning Bolt (Flashlight Torch) - Shadow / Rim -->
+    <path
+        android:fillColor="#FF8F00"
+        android:pathData="M57,31 L44,52 L54,52 L49,76 L66,48 L56,48 Z" />
+
+    <!-- Center Electric Lightning Bolt - Primary Body -->
+    <path
+        android:fillColor="#FFD54F"
+        android:pathData="M56,32 L45,51 L53,51 L50,74 L64,49 L55,49 Z" />
+
+    <!-- Bolt Core High-Intensity Highlight -->
+    <path
+        android:fillColor="#FFFFFFAA"
+        android:pathData="M55,36 L48,49 L53,49 L51,63 L59,51 L54,51 Z" />
+</vector>

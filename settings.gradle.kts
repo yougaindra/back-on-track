@@ -12,5 +12,7 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "BackOnTrack"
-include(":app")
+rootProject.name = "Monorepo"
+include(":apps:moto-gestures")
+include(":apps:back-on-track")
+
